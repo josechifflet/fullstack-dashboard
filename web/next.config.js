@@ -6,12 +6,16 @@ const nextConfig = {
       ? []
       : [
           {
+            source: '/',
+            destination: 'http://localhost:4000',
+          },
+          {
             source: '/graphql',
-            destination: 'http://localhost:8080/graphql',
+            destination: 'http://localhost:4000/graphql',
           },
           {
             source: '/api/:path*',
-            destination: 'http://localhost:8080/api/:path*',
+            destination: 'http://localhost:4000/api/:path*',
           },
         ];
   },

@@ -5,6 +5,7 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
+import http from 'http';
 import morgan from 'morgan';
 
 import config from '../../config';
@@ -23,87 +24,72 @@ import session from '../middleware/session';
 import slowDown from '../middleware/slow-down';
 import xPoweredBy from '../middleware/x-powered-by';
 import xRequestedWith from '../middleware/x-requested-with';
-import xst from '../middleware/xst';
 import { startServer } from './start-server';
 
-/**
- * Creates an Express application.
- */
-class App {
-  private app: express.Application | undefined;
+const App = async () => {
+  // Create Express application.
+  const app = express();
+  const httpServer = http.createServer(app);
 
-  public constructAsync = async () => {
-    // Create Express application.
-    this.app = express();
-
-    // Use logging on application.
-    if (config.NODE_ENV === 'production')
-      this.app.use(
-        morgan(
-          ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms'
-        )
-      );
-    else this.app.use(morgan('dev'));
-
-    const apolloServer = await intializeApolloServer(this.app);
-    this.app.use('/graphql', cors(), json(), expressMiddleware(apolloServer));
-
-    // Allow proxies on our nginx server in production.
-    if (config.NODE_ENV === 'production') this.app.enable('trust proxy');
-
-    // Security headers.
-    this.app.use(
-      helmet({ frameguard: { action: 'deny' }, hidePoweredBy: false })
+  if (config.NODE_ENV === 'production')
+    app.use(
+      morgan(
+        ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time ms'
+      )
     );
+  else app.use(morgan('dev'));
 
-    // Enable special `X-Powered-By` header.
-    this.app.use(xPoweredBy());
+  const apolloServer = await intializeApolloServer(httpServer);
+  app.use('/graphql', cors(), json(), expressMiddleware(apolloServer));
 
-    // Check for CSRF via the Header method.
-    this.app.use(xRequestedWith());
+  // Allow proxies on our nginx server in production.
+  if (config.NODE_ENV === 'production') app.enable('trust proxy');
 
-    // Validate `Accept` header.
-    this.app.use(accept());
+  // Security headers.
+  app.use(helmet({ frameguard: { action: 'deny' }, hidePoweredBy: false }));
 
-    // Handle if server is too busy.
-    this.app.use(busyHandler());
+  // Enable special `X-Powered-By` header.
+  app.use(xPoweredBy());
 
-    // Load signed cookie parser. JSON parser is loaded in each required
-    // endpoints in a case-by-case basis.
-    this.app.use(cookieParser(config.SESSION_SECRET));
+  // Check for CSRF via the Header method.
+  app.use(xRequestedWith());
 
-    // Prevent parameter pollution.
-    this.app.use(hpp());
+  // Validate `Accept` header.
+  app.use(accept());
 
-    // Only allow the following methods: [OPTIONS, HEAD, CONNECT, GET, POST, PATCH, PUT, DELETE].
-    this.app.use(xst());
+  // Handle if server is too busy.
+  app.use(busyHandler());
 
-    this.app.use(session());
+  // Load signed cookie parser. JSON parser is loaded in each required
+  // endpoints in a case-by-case basis.
+  app.use(cookieParser(config.SESSION_SECRET));
 
-    // Log requests (successful requests).
-    this.app.use(successLogger);
+  // Prevent parameter pollution.
+  app.use(hpp());
 
-    // Define API routes. Throttle '/api' route to prevent spammers.
-    this.app.use('/api', slowDown(75));
-    this.app.use('/api/v1', HealthRouter());
-    this.app.use('/api/v1/auth', AuthRouter());
-    this.app.use('/api/v1/attendances', AttendanceRouter());
-    this.app.use('/api/v1/sessions', SessionRouter());
-    this.app.use('/api/v1/users', UserRouter());
+  app.use(session());
 
-    // Catch-all routes for API.
-    this.app.all('*', notFound());
+  // Log requests (successful requests).
+  app.use(successLogger);
 
-    // Log errors.
-    this.app.use(errorLogger);
+  // Define API routes. Throttle '/api' route to prevent spammers.
+  app.use('/api', slowDown(75));
+  app.use('/api/v1', HealthRouter());
+  app.use('/api/v1/auth', AuthRouter());
+  app.use('/api/v1/attendances', AttendanceRouter());
+  app.use('/api/v1/sessions', SessionRouter());
+  app.use('/api/v1/users', UserRouter());
 
-    // Define error handlers.
-    this.app.use(errorHandler);
-  };
+  // Catch-all routes for API.
+  app.all('*', notFound());
 
-  public start = async () => {
-    if (this.app) startServer(this.app);
-  };
-}
+  // Log errors.
+  app.use(errorLogger);
 
-export default new App();
+  // Define error handlers.
+  app.use(errorHandler);
+
+  await startServer(httpServer);
+};
+
+export default App;

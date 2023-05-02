@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit';
 
+import cryptoDataReducer from './reducers/cryptoDataReducer';
 import selectedYearReducer from './reducers/selectedYearReducer';
 
 const store = configureStore({
   reducer: {
     selectedYear: selectedYearReducer,
+    cryptoData: cryptoDataReducer,
   },
 });
 

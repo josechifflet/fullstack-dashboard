@@ -6,8 +6,8 @@ import {
   ApolloServerPluginLandingPageLocalDefault,
   ApolloServerPluginLandingPageProductionDefault,
 } from '@apollo/server/plugin/landingPage/default';
-import express from 'express';
 import { ExecutionArgs } from 'graphql';
+import { PubSub, PubSubEngine } from 'graphql-subscriptions';
 import { Context, SubscribeMessage } from 'graphql-ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import http from 'http';
@@ -18,23 +18,26 @@ import { WebSocketServer } from 'ws';
 import { resolvers } from '../../resolvers';
 import log from '../../util/tslog';
 
+export const pubSub: PubSubEngine = new PubSub();
+
 /**
  * Initializes the Apollo Server to a given express application
  */
 export async function intializeApolloServer(
-  app: express.Application
+  httpServer: http.Server<
+    typeof http.IncomingMessage,
+    typeof http.ServerResponse
+  >
 ): Promise<ApolloServer<BaseContext>> {
   const schema = await buildSchema({
     resolvers: resolvers as any,
     emitSchemaFile: path.resolve(__dirname, '../../../schema.gql'),
+    pubSub,
   });
-
-  const httpServer = http.createServer(app);
 
   // Creating the WebSocket subscription server
   const wsServer = new WebSocketServer({
     server: httpServer,
-    path: '/graphql',
   });
   const getDynamicContext = async (
     ctx: Context,
@@ -57,6 +60,10 @@ export async function intializeApolloServer(
   const server = new ApolloServer({
     schema,
     plugins: [
+      // Proper shutdown for the HTTP server.
+      ApolloServerPluginDrainHttpServer({ httpServer }),
+
+      // Proper shutdown for the WebSocket server.
       {
         async serverWillStart() {
           return {

@@ -1,12 +1,17 @@
-import { useQuery } from '@apollo/client';
+import { useQuery, useSubscription } from '@apollo/client';
 import { Box, List, ListItem, Text, VStack } from '@chakra-ui/react';
-import { memo, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 
 import Layout from '../components/Layout';
 import Hello from '../components/Pages/Home/Hello';
 import Links from '../components/Pages/Home/Links';
 import Spinner from '../components/Spinner';
-import { GET_SYMBOLS } from '../gql';
+import SymbolsTable from '../components/Table/SymbolsTable';
+import {
+  GET_SYMBOLS,
+  MARK_PRICE_DATA_SUBSCRIPTION,
+  SYMBOLS_DATA_SUBSCRIPTION,
+} from '../gql';
 import { useStatusAndUser } from '../utils/hooks';
 
 /**
@@ -15,51 +20,44 @@ import { useStatusAndUser } from '../utils/hooks';
  * @returns React functional component.
  */
 const Home = () => {
-  const { status, isLoading } = useStatusAndUser();
+  const { status } = useStatusAndUser();
 
-  const [selectedSymbol, setSelectedSymbol] = useState<string>('');
+  const { data: dataGetSymbols, loading: loadingGetSymbols } =
+    useQuery(GET_SYMBOLS);
+  const { data: dataMarkPrice, loading: loadingMarkPrice } = useSubscription(
+    MARK_PRICE_DATA_SUBSCRIPTION
+  );
+  const { data: dataSymbolsStats, loading: loadingSymbolStats } =
+    useSubscription(SYMBOLS_DATA_SUBSCRIPTION);
 
-  const handleSymbolClick = (symbol: string) => {
-    setSelectedSymbol(symbol);
+  const [symbolsPriceMapState, setSymbolsPriceMapState] = useState<
+    Map<string, string>
+  >(new Map<string, string>());
+  const updatePriceMapState = (key: string, value: string) => {
+    setSymbolsPriceMapState((map) => new Map(map.set(key, value)));
   };
-  const { data, loading } = useQuery(GET_SYMBOLS);
 
-  if (isLoading) return <Spinner />;
+  useEffect(() => {
+    if (dataMarkPrice) {
+      updatePriceMapState(
+        dataMarkPrice.markPriceDataSubscription.s,
+        dataMarkPrice.markPriceDataSubscription.p
+      );
+    }
+  }, [dataMarkPrice]);
+
+  if (loadingGetSymbols || !dataGetSymbols) return <Spinner />;
 
   return (
     <Layout title={['Home']}>
       {status && status.isAuthenticated && status.user ? (
         <>
-          <Box
-            as="aside"
-            p={1}
-            w={['full', 'full', '15vw']}
-            bgColor="white"
-            boxShadow="md"
-            borderRadius="md"
-          >
-            <Text fontWeight="bold" mb={1}>
-              Symbols ({JSON.stringify(data?.symbols.length)})
-            </Text>
-            <List>
-              {data?.symbols.map(({ symbol }) => (
-                <ListItem
-                  key={symbol}
-                  py={1}
-                  px={1}
-                  cursor="pointer"
-                  bgColor={
-                    selectedSymbol === symbol ? 'gray.100' : 'transparent'
-                  }
-                  _hover={{ bgColor: 'gray.100' }}
-                  onClick={() => handleSymbolClick(symbol)}
-                >
-                  <Text mr={2}>{symbol}</Text>
-                </ListItem>
-              ))}
-            </List>
+          <Box>
+            <SymbolsTable
+              symbols={dataGetSymbols.symbols.map(({ symbol }) => symbol)}
+              symbolsPriceMap={symbolsPriceMapState}
+            />
           </Box>
-          <Box></Box>
         </>
       ) : (
         <VStack

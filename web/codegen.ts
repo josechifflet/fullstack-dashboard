@@ -2,7 +2,7 @@ import { CodegenConfig } from '@graphql-codegen/cli';
 
 const config: CodegenConfig = {
   overwrite: true,
-  schema: 'http://localhost:8080/graphql',
+  schema: 'http://localhost:4000/graphql',
   config: {
     skipTypename: true,
     enumsAsTypes: true,
@@ -10,7 +10,11 @@ const config: CodegenConfig = {
       numeric: 'number',
     },
   },
-  documents: ['gql/queries/**/*.graphql', 'gql/mutations/**/*.graphql'],
+  documents: [
+    'gql/queries/**/*.graphql',
+    'gql/mutations/**/*.graphql',
+    'gql/subscriptions/**/*.graphql',
+  ],
   generates: {
     './gql/__generated__/': {
       preset: 'client',

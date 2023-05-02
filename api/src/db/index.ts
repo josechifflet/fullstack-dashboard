@@ -6,6 +6,7 @@ import { Symbol } from './models/symbol.model';
 import { Trader } from './models/trader.model';
 import { TraderPerformance } from './models/trader_performance.model';
 import { User } from './models/user.model';
+import { VolumeTable } from './models/volume_table.model';
 import { typeormInstance } from './typeorm-connection';
 
 const repositories = {
@@ -18,6 +19,7 @@ const repositories = {
   traderPerformance:
     typeormInstance.dataSource.manager.getRepository(TraderPerformance),
   symbol: typeormInstance.dataSource.manager.getRepository(Symbol),
+  volumeTable: typeormInstance.dataSource.manager.getRepository(VolumeTable),
 };
 
 export const db = {

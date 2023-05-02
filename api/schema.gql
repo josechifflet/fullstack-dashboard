@@ -3,6 +3,17 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+type MarkPriceUpdate {
+  E: Float!
+  P: String!
+  T: Float!
+  e: String!
+  i: String!
+  p: String!
+  r: String!
+  s: String!
+}
+
 type PaginatedTraderResponse {
   count: Int!
   currentPage: Int!
@@ -18,10 +29,24 @@ type Query {
   traders(page: Float!, param: String, take: Float!): PaginatedTraderResponse!
 }
 
+type Subscription {
+  markPriceDataSubscription: MarkPriceUpdate!
+  symbolsDataSubscription: SymbolTradeData!
+}
+
 type Symbol {
   ID: String!
   PK: ID!
   symbol: String!
+}
+
+type SymbolTradeData {
+  interval: String!
+  symbol: String!
+  tradeAmount: Float!
+  tradePctgChange: Float!
+  volume: Float!
+  volumePctgChange: Float!
 }
 
 type Trader {

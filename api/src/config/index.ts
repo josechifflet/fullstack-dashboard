@@ -58,7 +58,7 @@ const config = {
   REDIS_PORT: get('REDIS_PORT').default(6379).asPortNumber(),
 
   // Ports.
-  PORT: get('PORT').default(8080).asPortNumber(),
+  PORT: get('PORT').default(4000).asPortNumber(),
 
   // Session cookie name.
   SESSION_NAME: get('SESSION_NAME').default('connect.sid').asString(),

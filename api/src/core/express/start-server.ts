@@ -1,4 +1,4 @@
-import express from 'express';
+import http from 'http';
 
 import config from '../../config';
 import { typeormInstance } from '../../db/typeorm-connection';
@@ -8,7 +8,12 @@ import { shutdownServer } from './shutdown-server';
 /**
  * Starts our server.
  */
-export async function startServer(app: express.Application) {
+export async function startServer(
+  httpServer: http.Server<
+    typeof http.IncomingMessage,
+    typeof http.ServerResponse
+  >
+) {
   // Handle uncaught exceptions to prevent app error before starting.
   process.on('uncaughtException', (err: Error) => {
     logger.error('Unhandled exception 💥! Application shutting down!');
@@ -24,7 +29,7 @@ export async function startServer(app: express.Application) {
   logger.info(`Status of infrastructures: \n ${JSON.stringify(statusLog)}.`);
 
   // Prepare server.
-  const server = app.listen(config.PORT, () => {
+  const server = httpServer.listen(config.PORT, () => {
     logger.info(`API ready on port ${config.PORT} on mode ${config.NODE_ENV}!`);
   });
 

@@ -6,6 +6,7 @@ import { Symbol } from './symbol.model';
 import { Trader } from './trader.model';
 import { TraderPerformance } from './trader_performance.model';
 import { User } from './user.model';
+import { VolumeTable } from './volume_table.model';
 
 export const entities = [
   User,
@@ -16,6 +17,7 @@ export const entities = [
   Position,
   Trader,
   Symbol,
+  VolumeTable,
 ];
 
 export default {
@@ -27,4 +29,5 @@ export default {
   Position,
   Trader,
   Symbol,
+  VolumeTable,
 };

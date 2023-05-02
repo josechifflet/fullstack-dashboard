@@ -15,6 +15,8 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
 const documents = {
     "query GetSymbols {\n  symbols {\n    symbol\n  }\n}": types.GetSymbolsDocument,
     "query GetTraders($page: Float!, $take: Float!, $param: String) {\n  traders(page: $page, take: $take, param: $param) {\n    data {\n      ID\n    }\n    count\n    currentPage\n    lastPage\n    nextPage\n    prevPage\n  }\n}": types.GetTradersDocument,
+    "subscription MarkPriceDataSubscription {\n  markPriceDataSubscription {\n    E\n    P\n    T\n    e\n    i\n    p\n    r\n    s\n  }\n}": types.MarkPriceDataSubscriptionDocument,
+    "subscription SymbolsDataSubscription {\n  symbolsDataSubscription {\n    interval\n    symbol\n    tradeAmount\n    tradePctgChange\n    volume\n    volumePctgChange\n  }\n}": types.SymbolsDataSubscriptionDocument,
 };
 
 /**
@@ -39,6 +41,14 @@ export function gql(source: "query GetSymbols {\n  symbols {\n    symbol\n  }\n}
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "query GetTraders($page: Float!, $take: Float!, $param: String) {\n  traders(page: $page, take: $take, param: $param) {\n    data {\n      ID\n    }\n    count\n    currentPage\n    lastPage\n    nextPage\n    prevPage\n  }\n}"): (typeof documents)["query GetTraders($page: Float!, $take: Float!, $param: String) {\n  traders(page: $page, take: $take, param: $param) {\n    data {\n      ID\n    }\n    count\n    currentPage\n    lastPage\n    nextPage\n    prevPage\n  }\n}"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "subscription MarkPriceDataSubscription {\n  markPriceDataSubscription {\n    E\n    P\n    T\n    e\n    i\n    p\n    r\n    s\n  }\n}"): (typeof documents)["subscription MarkPriceDataSubscription {\n  markPriceDataSubscription {\n    E\n    P\n    T\n    e\n    i\n    p\n    r\n    s\n  }\n}"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "subscription SymbolsDataSubscription {\n  symbolsDataSubscription {\n    interval\n    symbol\n    tradeAmount\n    tradePctgChange\n    volume\n    volumePctgChange\n  }\n}"): (typeof documents)["subscription SymbolsDataSubscription {\n  symbolsDataSubscription {\n    interval\n    symbol\n    tradeAmount\n    tradePctgChange\n    volume\n    volumePctgChange\n  }\n}"];
 
 export function gql(source: string) {
   return (documents as any)[source] ?? {};

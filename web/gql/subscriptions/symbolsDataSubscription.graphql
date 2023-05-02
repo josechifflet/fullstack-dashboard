@@ -1,0 +1,10 @@
+subscription SymbolsDataSubscription {
+  symbolsDataSubscription {
+    interval
+    symbol
+    tradeAmount
+    tradePctgChange
+    volume
+    volumePctgChange
+  }
+}
